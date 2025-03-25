@@ -7,7 +7,6 @@ import space.flight.entity.Matriz;
 import space.flight.entity.Orden;
 import space.flight.entity.Orientacion;
 import java.util.List;
-import java.util.Optional;
 import space.flight.repository.DronRepository;
 
 @AllArgsConstructor
@@ -19,34 +18,41 @@ public class FlightService {
 
     // Ejecutar ordenes de vuelo sobre un dron especifico
     public Dron executeCommands(Long dronId, List<Orden> ordenes) {
-        // Para contener si el dron no existe
-        Optional<Dron> dronOpt = dronRepository.findById(dronId);
+        Dron dron = dronRepository.findById(dronId)
+                .orElseThrow(() -> new IllegalArgumentException("El dron no existe."));
+        Matriz matriz = dron.getMatriz();
 
-        if (dronOpt.isPresent()) {
-            // Si el dron existe lo guardamos y guardamos su matriz
-            Dron dron = dronOpt.get();
-            Matriz matriz = dron.getMatriz();
-
-            // Ejecutamos las ordenes
-            for (Orden orden : ordenes) {
-                switch (orden) {
-                    case MOVE_FORWARD:
-                        moveForward(dron, matriz); break;
-                    case TURN_LEFT:
-                        dron.setOrientacion(turnLeft(dron.getOrientacion())); break;
-                    case TURN_RIGHT:
-                        dron.setOrientacion(turnRight(dron.getOrientacion())); break;
-                    default:
-                        throw new IllegalArgumentException("Orden incorrecta.");
-                }
+        // Ejecutar cada orden de la lista
+        for (Orden orden : ordenes) {
+            switch (orden) {
+                case MOVE_FORWARD:
+                    moveForward(dron, matriz);
+                    dron.getOrdenes().add(orden);
+                    break;
+                case TURN_LEFT:
+                    dron.setOrientacion(turnLeft(dron.getOrientacion()));
+                    dron.getOrdenes().add(orden);
+                    break;
+                case TURN_RIGHT:
+                    dron.setOrientacion(turnRight(dron.getOrientacion()));
+                    dron.getOrdenes().add(orden);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Orden incorrecta.");
             }
-
-            return dronRepository.save(dron);
-
-        } else{
-            throw new IllegalArgumentException("El dron no existe.");
         }
+
+        // Comprobar que no haya ningun otro dron en esa posicion.
+        for (Dron d : matriz.getDrones()) {
+            if (!d.getDronId().equals(dron.getDronId()) &&
+                    d.getX() == dron.getX() &&
+                    d.getY() == dron.getY()) {
+                throw new IllegalStateException("Esta ocupada la posición por otro dron.");
+            }
+        }
+        return dronRepository.save(dron);
     }
+
 
     // Ejecutar ordenes de vuelo en secuencia para un conjunto de drones
     public void executeCommandsForAllDrons(List<Dron> drones, List<Orden> ordenes) {
