@@ -3,10 +3,10 @@ package space.flight.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import space.flight.dto.DronCreateDTO;
-import space.flight.dto.DronDTO;
 import space.flight.dto.DronEditDTO;
 import space.flight.entity.Dron;
 import space.flight.entity.Matriz;
+import space.flight.exception.*;
 import space.flight.mapper.DronMapper;
 import space.flight.repository.DronRepository;
 import space.flight.repository.MatrizRepository;
@@ -25,19 +25,19 @@ public class DronService {
         // Comprobamos que la matriz exista
         Long matrizId = dto.getMatrizId();
         Matriz matriz = matrizRepository.findById(matrizId)
-                .orElseThrow(() -> new IllegalArgumentException("La matriz no se encuentra."));
+                .orElseThrow(() -> new MatrixNotFoundException("La matriz no se encuentra."));
 
         Dron dron = DronMapper.toEntity(dto, matriz);
         // Comprobamos que el dron no este fuera de la matriz
         if (dron.getX() < 0 || dron.getX() >= matriz.getMtzX() || dron.getY() < 0 || dron.getY() >= matriz.getMtzY()) {
-            throw new IllegalArgumentException("El dron está fuera de la matriz.");
+            throw new DroneOutOfMatrixException("El dron está fuera de la matriz.");
         }
 
         // Recorremos la lista de drones que hay en una matriz concreta que buscamos para comprobar
         // que no exista ningun dron en la posición que buscamos
         for (Dron d : matriz.getDrones()) {
             if (d.getX() == dron.getX() && d.getY() == dron.getY()) {
-                throw new IllegalArgumentException("Ya existe un dron en esa posición");
+                throw new DronePositionOccupiedException("Ya existe un dron en esa posición");
             }
         }
 
@@ -49,24 +49,24 @@ public class DronService {
     public Dron editDron(Long dronId, DronEditDTO dto) {
         //Comprobamos que el dron exista y que la matriz exista
         Dron dronExistente = dronRepository.findById(dronId)
-                .orElseThrow(() -> new IllegalArgumentException("El dron no existe."));
+                .orElseThrow(() -> new DroneNotFoundException("El dron no existe."));
 
         Matriz matriz = matrizRepository.findById(dto.getMatrizId())
-                .orElseThrow(() -> new IllegalArgumentException("No se encuentra la matriz."));
+                .orElseThrow(() -> new MatrixNotFoundException("No se encuentra la matriz."));
 
         // Actualizamos con los datos actuales
         DronMapper.updateEntityFromDTO(dto, dronExistente, matriz);
 
         // Compruebo que la posicion del dron este en la matriz
         if (dronExistente.getX() < 0 || dronExistente.getX() >= matriz.getMtzX() || dronExistente.getY() < 0 || dronExistente.getY() >= matriz.getMtzY()) {
-            throw new IllegalArgumentException("El dron esta fuera de la matriz.");
+            throw new DroneOutOfMatrixException("El dron está fuera de las coordenadas de la matriz.");
         }
 
         // Recorro la lista de drones que este asociada a esa matriz
         // para comprobar que el dron este en una posicion que no este ocupada
         for (Dron d : matriz.getDrones()) {
             if (!d.getDronId().equals(dronExistente.getDronId()) && d.getX() == dronExistente.getX() && d.getY() == dronExistente.getY()) {
-                throw new IllegalArgumentException("Ya existe un dron en la posicion X:" + dronExistente.getX() + " e Y:" + dronExistente.getY());
+                throw new DronePositionOccupiedException("Ya existe un dron en la posicion X:" + dronExistente.getX() + " e Y:" + dronExistente.getY());
             }
         }
 
@@ -77,7 +77,7 @@ public class DronService {
     // Eliminar un dron del sistema
     public void deleteDron(Long dronId) {
         Dron dron = dronRepository.findById(dronId)
-                .orElseThrow(() -> new IllegalArgumentException("El dron no existe."));
+                .orElseThrow(() -> new DroneNotFoundException("El dron no existe."));
         dronRepository.delete(dron);
     }
 
@@ -88,7 +88,7 @@ public class DronService {
     // Consultar el listado de drones por matriz
     public List<Dron> findAllDronsByMatriz(Long matrizId) {
         Matriz matriz = matrizRepository.findById(matrizId)
-                .orElseThrow(() -> new IllegalArgumentException("La matriz no existe."));
+                .orElseThrow(() -> new MatrixNotFoundException("La matriz no existe."));
 
         return matriz.getDrones();
     }
@@ -97,11 +97,15 @@ public class DronService {
     // Consultar los detalles del dron que esta posicionado en las coordenadas X, Y
     public Dron findDronByPosition(int x, int y, Long matrizId) {
         Matriz matriz = matrizRepository.findById(matrizId)
-                .orElseThrow(() -> new IllegalArgumentException("La matriz no existe."));
+                .orElseThrow(() -> new MatrixNotFoundException("La matriz no existe."));
+
+        if (x < 0 || x > matriz.getMtzX() || y < 0 || y > matriz.getMtzY()) {
+            throw new DroneOutOfMatrixException("El dron está fuera de la matriz.");
+        }
 
         return matriz.getDrones().stream()
                 .filter(d -> d.getX() == x && d.getY() == y)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No hay ningun dron en las coordenadas."));
+                .orElseThrow(() -> new DroneNotFoundException("No hay ningun dron en las coordenadas."));
     }
 }

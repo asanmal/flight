@@ -1,5 +1,7 @@
 package space.flight.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,26 +24,18 @@ public class FlightController {
     private final FlightService flightService;
 
     @PostMapping("/{dronId}")
-    public ResponseEntity<DronDTO> executeCommands(@PathVariable Long dronId, @RequestBody List<Orden> ordenes) {
+    @Operation( summary = "Ejecutar ordenes en un dron por su ID")
+    public ResponseEntity<DronDTO> executeCommands(@PathVariable Long dronId, @Valid @RequestBody List<Orden> ordenes) {
         Dron updated = flightService.executeCommands(dronId, ordenes);
         DronDTO response = DronMapper.toDto(updated);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/group")
-    public ResponseEntity<List<DronDTO>> executeCommandsForAllDrons(@RequestBody FlightDTO request) {
-        List<Dron> drones = new ArrayList<>();
-        // Filtramos los drones que coincidan con los IDs del dlightDAO
-        for (Dron d : dronService.findAllDrons()) {
-            if (request.getDronIds().contains(d.getDronId())) {
-                drones.add(d);
-            }
-        }
+    @Operation( summary = "Ejecutar ordenes para multiples dron por su ID")
+    public ResponseEntity<List<DronDTO>> executeCommandsForAllDrons(@Valid @RequestBody FlightDTO request) {
+        List<Dron> drones = flightService.executeCommandsForAllDrons(request.getDronIds(), request.getOrdenes());
 
-        // Ejecuta todas las ordenes a todos los drones
-        flightService.executeCommandsForAllDrons(drones, request.getOrdenes());
-
-        // Convertimos el dron a dto para la salida
         List<DronDTO> response = new ArrayList<>();
         for (Dron drone : drones) {
             DronDTO dto = DronMapper.toDto(drone);

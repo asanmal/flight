@@ -6,6 +6,8 @@ import space.flight.dto.MatrizCreateDTO;
 import space.flight.dto.MatrizDTO;
 import space.flight.dto.MatrizEditDTO;
 import space.flight.entity.Matriz;
+import space.flight.exception.InvalidMatrixDimensionsException;
+import space.flight.exception.MatrixNotFoundException;
 import space.flight.mapper.MatrizMapper;
 import space.flight.repository.MatrizRepository;
 import java.util.ArrayList;
@@ -22,19 +24,32 @@ public class MatrizService {
     // Crear matriz de vuelo
     public Matriz createMatriz(MatrizCreateDTO dto) {
         Matriz matriz = MatrizMapper.toEntity(dto);
-        // Comprobamos si la matriz ya existe
+        // Comprobamos si la matriz es valida
         if (matriz.getMtzX() < 0 || matriz.getMtzY() < 0) {
-            throw new IllegalArgumentException("Las dimensiones de la matriz son inválidas.");
+            throw new InvalidMatrixDimensionsException("Las dimensiones de la matriz son inválidas.");
         }
 
         return matrizRepository.save(matriz);
+    }
+
+    // Eliminar matriz de vuelo
+    public void deleteMatriz(Long matrizId) {
+        Matriz matriz = matrizRepository.findById(matrizId)
+                .orElseThrow(() -> new MatrixNotFoundException("La matriz con el ID " + matrizId + " no existe."));
+
+        // Comprobamos si la matriz tiene drones
+        if (matriz.getDrones() != null && !matriz.getDrones().isEmpty()) {
+            throw new InvalidMatrixDimensionsException("No se puede eliminar la matriz porque tiene drones.");
+        }
+
+        matrizRepository.delete(matriz);
     }
 
 
     // Editar matriz de vuelo
     public Matriz editMatriz(Long matrizId, MatrizEditDTO dto) {
         Matriz matrizExistente = matrizRepository.findById(matrizId)
-                .orElseThrow(() -> new IllegalArgumentException("La matriz con el ID " + matrizId + " no existe."));
+                .orElseThrow(() -> new MatrixNotFoundException("La matriz con el ID " + matrizId + " no existe."));
 
         matrizExistente.setMtzX(dto.getMtzX());
         matrizExistente.setMtzY(dto.getMtzY());
@@ -47,7 +62,7 @@ public class MatrizService {
     // Consultar matriz por su id
     public MatrizDTO findMatrizById(Long matrizId) {
         Matriz matriz = matrizRepository.findById(matrizId)
-                .orElseThrow(() -> new IllegalArgumentException("La matriz no existe."));
+                .orElseThrow(() -> new MatrixNotFoundException("La matriz no existe."));
 
         // Convertimos la entidad a DTO
         return MatrizMapper.toDto(matriz);

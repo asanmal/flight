@@ -6,7 +6,11 @@ import space.flight.entity.Dron;
 import space.flight.entity.Matriz;
 import space.flight.entity.Orden;
 import space.flight.entity.Orientacion;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import space.flight.exception.*;
 import space.flight.repository.DronRepository;
 
 @AllArgsConstructor
@@ -19,7 +23,7 @@ public class FlightService {
     // Ejecutar ordenes de vuelo sobre un dron especifico
     public Dron executeCommands(Long dronId, List<Orden> ordenes) {
         Dron dron = dronRepository.findById(dronId)
-                .orElseThrow(() -> new IllegalArgumentException("El dron no existe."));
+                .orElseThrow(() -> new DroneNotFoundException("El dron no existe."));
         Matriz matriz = dron.getMatriz();
 
         // Ejecutar cada orden de la lista
@@ -38,7 +42,7 @@ public class FlightService {
                     dron.getOrdenes().add(orden);
                     break;
                 default:
-                    throw new IllegalArgumentException("Orden incorrecta.");
+                    throw new InvalidOrderException("Orden incorrecta.");
             }
         }
 
@@ -47,7 +51,7 @@ public class FlightService {
             if (!d.getDronId().equals(dron.getDronId()) &&
                     d.getX() == dron.getX() &&
                     d.getY() == dron.getY()) {
-                throw new IllegalStateException("Esta ocupada la posición por otro dron.");
+                throw new DronePositionOccupiedException("Esta ocupada la posición por otro dron.");
             }
         }
         return dronRepository.save(dron);
@@ -55,12 +59,30 @@ public class FlightService {
 
 
     // Ejecutar ordenes de vuelo en secuencia para un conjunto de drones
-    public void executeCommandsForAllDrons(List<Dron> drones, List<Orden> ordenes) {
-        // Iteramos sobre cada dron y le ejecutamos las ordenes
-        for (Dron dron : drones) {
-                // Ejecutar las ordenes para este dron
-                executeCommands(dron.getDronId(), ordenes);
+    public List<Dron> executeCommandsForAllDrons(List<Long> dronIds, List<Orden> ordenes) {
+        List<Dron> drones = dronRepository.findAllById(dronIds);
+
+        // Comprobamos que todos los drones recibidos existan
+        if (drones.size() != dronIds.size()) {
+            // Calcula la lista de IDs que no se encontraron
+            List<Long> missingIds = new ArrayList<>();
+            for (Long id : dronIds) {
+                if (drones.stream().noneMatch(d -> d.getDronId().equals(id))) {
+                    missingIds.add(id);
+                }
+            }
+
+            // Si hay un dron que no se encontro, lanzar excepcion y muestro la lista de los no encontrados
+            if (!missingIds.isEmpty()) {
+                throw new DroneNotFoundException("Los siguientes drones no existen: " + missingIds);
+            }
         }
+
+        // Recorro los drones y le ejecuto todas las ordenes a cada uno
+        for (Dron dron : drones) {
+            executeCommands(dron.getDronId(), ordenes);
+        }
+        return drones;
     }
 
 
@@ -71,7 +93,7 @@ public class FlightService {
             case O -> Orientacion.S;
             case S -> Orientacion.E;
             case E -> Orientacion.N;
-            default -> throw new IllegalStateException("Orientacion desconocida: " + orientacion);
+            default -> throw new UnknownOrientationException("Orientacion desconocida: " + orientacion);
         };
     }
 
@@ -81,7 +103,7 @@ public class FlightService {
             case E -> Orientacion.S;
             case S -> Orientacion.O;
             case O -> Orientacion.N;
-            default -> throw new IllegalStateException("Orientacion desconocida: " + orientacion);
+            default -> throw new UnknownOrientationException("Orientacion desconocida: " + orientacion);
         };
     }
 
@@ -101,7 +123,7 @@ public class FlightService {
             dron.setX(x);
             dron.setY(y);
         } else {
-            throw new IllegalStateException("El dron esta fuera de la matriz.");
+            throw new DroneOutOfMatrixException("El dron esta fuera de la matriz.");
         }
     }
 
