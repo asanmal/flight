@@ -87,23 +87,30 @@ public class FlightService {
 
 
     // Metodos para giros y movimientos
-    private Orientacion turnLeft(Orientacion orientacion) {
-        return switch (orientacion) {
+    private Orientacion turnLeft(Orientacion orientacionLeft) {
+        if (orientacionLeft == null) {
+            throw new UnknownOrientationException("La orientacion es desconocida: " + orientacionLeft);
+        }
+        return switch (orientacionLeft) {
             case N -> Orientacion.O;
             case O -> Orientacion.S;
             case S -> Orientacion.E;
             case E -> Orientacion.N;
-            default -> throw new UnknownOrientationException("Orientacion desconocida: " + orientacion);
+            default -> throw new UnknownOrientationException("La orientacion es desconocida: " + orientacionLeft);
         };
     }
 
-    private Orientacion turnRight(Orientacion orientacion) {
-        return switch (orientacion) {
+    private Orientacion turnRight(Orientacion orientacionRight) {
+        if (orientacionRight == null) {
+            throw new UnknownOrientationException("Orientacion desconocida: " + orientacionRight);
+        }
+
+        return switch (orientacionRight) {
             case N -> Orientacion.E;
             case E -> Orientacion.S;
             case S -> Orientacion.O;
             case O -> Orientacion.N;
-            default -> throw new UnknownOrientationException("Orientacion desconocida: " + orientacion);
+            default -> throw new UnknownOrientationException("Orientacion desconocida: " + orientacionRight);
         };
     }
 

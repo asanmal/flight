@@ -9,6 +9,7 @@ import space.flight.entity.Orden;
 import space.flight.exception.DroneNotFoundException;
 import space.flight.exception.DroneOutOfMatrixException;
 import space.flight.exception.DronePositionOccupiedException;
+import space.flight.exception.UnknownOrientationException;
 import space.flight.repository.DronRepository;
 
 import java.util.List;
@@ -168,6 +169,30 @@ class FlightServiceTest {
     }
 
     @Test
+    void testTurnLeftInvalidOrientation() {
+        Matriz matriz = new Matriz();
+        matriz.setMtzX(5);
+        matriz.setMtzY(5);
+
+        Dron dron = new Dron();
+        dron.setDronId(1L);
+        dron.setX(3);
+        dron.setY(3);
+        dron.setOrientacion(null);
+        dron.setMatriz(matriz);
+        matriz.setDrones(List.of(dron));
+
+        when(dronRepository.findById(1L)).thenReturn(Optional.of(dron));
+        when(dronRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+
+        List<Orden> ordenes =  List.of(Orden.TURN_LEFT);
+
+        assertThrows(UnknownOrientationException.class, () -> {
+            flightService.executeCommands(1L, ordenes);
+        });
+    }
+
+    @Test
     void testExecuteCommandsTurnRight() {
         Matriz matriz = new Matriz();
         matriz.setMtzX(5);
@@ -276,6 +301,30 @@ class FlightServiceTest {
     }
 
     @Test
+    void testTurnRightInvalidOrientation() {
+        Matriz matriz = new Matriz();
+        matriz.setMtzX(5);
+        matriz.setMtzY(5);
+
+        Dron dron = new Dron();
+        dron.setDronId(1L);
+        dron.setX(3);
+        dron.setY(3);
+        dron.setOrientacion(null);
+        dron.setMatriz(matriz);
+        matriz.setDrones(List.of(dron));
+
+        when(dronRepository.findById(1L)).thenReturn(Optional.of(dron));
+        when(dronRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+
+        List<Orden> ordenes =  List.of(Orden.TURN_RIGHT);
+
+        assertThrows(UnknownOrientationException.class, () -> {
+            flightService.executeCommands(1L, ordenes);
+        });
+    }
+
+    @Test
     void testExecuteCommandsOutOfMatrix() {
         Matriz matriz = new Matriz();
         matriz.setMtzX(1);
@@ -340,33 +389,50 @@ class FlightServiceTest {
 
         Dron dron1 = new Dron();
         dron1.setDronId(1L);
-        dron1.setX(0);
+        dron1.setX(1);
         dron1.setY(0);
-        dron1.setOrientacion(N);
+        dron1.setOrientacion(O);
         dron1.setMatriz(matriz);
 
         Dron dron2 = new Dron();
         dron2.setDronId(2L);
         dron2.setX(1);
         dron2.setY(1);
-        dron2.setOrientacion(N);
+        dron2.setOrientacion(E);
         dron2.setMatriz(matriz);
-        matriz.setDrones(List.of(dron1, dron2));
 
-        when(dronRepository.findAllById(List.of(1L, 2L))).thenReturn(List.of(dron1, dron2));
-        when(dronRepository.findById(any())).thenAnswer(inv -> {
-            Long id = inv.getArgument(0);
-            return Optional.of(id == 1L ? dron1 : dron2);
+        Dron dron3 = new Dron();
+        dron3.setDronId(3L);
+        dron3.setX(1);
+        dron3.setY(1);
+        dron3.setOrientacion(S);
+        dron3.setMatriz(matriz);
+        matriz.setDrones(List.of(dron1, dron2, dron3));
+
+        when(dronRepository.findAllById(List.of(1L, 2L, 3L))).thenReturn(List.of(dron1, dron2, dron3));
+        when(dronRepository.findById(any())).thenAnswer(invocation -> {
+            Long id = invocation.getArgument(0);
+            if (id.equals(1L)) {
+                return Optional.of(dron1);
+            } else if (id.equals(2L)) {
+                return Optional.of(dron2);
+            } else if (id.equals(3L)) {
+                return Optional.of(dron3);
+            } else {
+                return Optional.empty();
+            }
         });
         when(dronRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        List<Dron> result = flightService.executeCommandsForAllDrons(List.of(1L, 2L), List.of(Orden.MOVE_FORWARD));
+        List<Dron> result = flightService.executeCommandsForAllDrons(List.of(1L, 2L, 3L), List.of(Orden.MOVE_FORWARD));
 
-        assertEquals(2, result.size());
+        assertEquals(3, result.size());
         assertEquals(0, dron1.getX());
-        assertEquals(1, dron1.getY());
-        assertEquals(1, dron2.getX());
-        assertEquals(2, dron2.getY());
+        assertEquals(0, dron1.getY());
+        assertEquals(2, dron2.getX());
+        assertEquals(1, dron2.getY());
+        assertEquals(1, dron3.getX());
+        assertEquals(0, dron3.getY());
     }
 
     @Test
@@ -463,7 +529,7 @@ class FlightServiceTest {
         dron1.setDronId(1L);
         dron1.setX(0);
         dron1.setY(0);
-        dron1.setOrientacion(N);
+        dron1.setOrientacion(S);
         dron1.setMatriz(matriz);
 
         matriz.setDrones(List.of(dron1));
