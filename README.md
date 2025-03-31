@@ -15,7 +15,8 @@ Aplicación API RESTful desarrollada en **Spring Boot 3**, que permite gestionar
 4. [🧠 Patrones de diseño aplicados](#-patrones-de-diseño-aplicados)
 5. [🛠️ Instalación y ejecución](#️-instalación-y-ejecución)
 6. [📡 Endpoints principales](#-endpoints-principales)
-7. [🧪Validaciones y manejo de errores](#-validaciones-y-manejo-de-errores) 
+7. [🧪 Validaciones y manejo de errores](#-validaciones-y-manejo-de-errores)
+8. [💡 Ejecución de tests](#-ejecución-de-tests) 
 
 
 ---
@@ -140,7 +141,7 @@ Desde tu IDE ejecuta la clase:
 space.flight.FlightApplication
 
 
-### 🧪 Acceder a la API
+### ⚠️ Acceder a la API
 Una vez arrancado el proyecto:
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
 - API Base URL: http://localhost:8080/api/vuelos
@@ -180,7 +181,7 @@ A continuación se listan los endpoints REST más relevantes expuestos por la AP
 
 ---
 
-## ⚠️ Validaciones y manejo de errores
+## 🧪 Validaciones y manejo de errores
 El sistema cuenta con un completo control de errores mediante excepciones personalizadas que mejoran la claridad y el mantenimiento del código. Estas excepciones están gestionadas globalmente mediante @ControllerAdvice, ofreciendo respuestas adecuadas y mensajes explicativos en cada caso.
 
 - Las principales excepciones utilizadas en el proyecto son:
@@ -193,3 +194,23 @@ El sistema cuenta con un completo control de errores mediante excepciones person
   - InvalidOrderException: se lanza cuando se recibe una orden no válida en la ejecución de comandos para un dron.
   - UnknownOrientationException: se lanza si se especifica una orientación no válida, es decir, que no está contemplada en el enum Orientacion.
   - Estas excepciones están diseñadas para trabajar en conjunto con las validaciones de entrada de datos y proporcionar al usuario errores comprensibles y útiles con su respectivo código HTTP (400, 404, 409, etc.).
+
+---
+
+## 💡 Ejecución de tests
+El proyecto incluye pruebas unitarias, mockito y springBootTest para garantizar el funcionamiento del sistema.
+Hay varias formas de correr los test:
+
+### ▶️ Desde la línea de comandos
+1. Abre un terminal en la raíz del proyecto.
+2. Ejecuta el siguiente comando: mvn clean test
+
+### 💻 Desde un IDE(IntelliJ Idea)
+1. Haz clic derecho sobre el paquete src/test/java
+2. Selecciona Run 'test' in java.
+3. También se pueden ejecutar desde el código en el icono de run al inicio de cada método o de toda la clase.
+
+### 📊 Generar informe de cobertura con Jacoco
+Con este informe podemos comprobar que partes del código están cubiertas por los test y sus porcentajes.
+1. Desde la línea de comandos de nuestro IDE ejecutamos: mvn jacoco:report
+2. Abre el archivo /target/site/jacoco/index.html en el navegador y te aparecerá el informe generado
