@@ -6,11 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import space.flight.dto.DronCreateDTO;
-import space.flight.entity.Dron;
-import space.flight.entity.Matriz;
-import space.flight.entity.Orientacion;
-import space.flight.service.DronService;
+import space.flight.application.dto.DronCreateDTO;
+import space.flight.domain.entity.Dron;
+import space.flight.domain.entity.Matriz;
+import space.flight.domain.entity.Orientacion;
+import space.flight.domain.service.DronService;
+import space.flight.infrastructure.controller.DronController;
 
 import java.util.List;
 

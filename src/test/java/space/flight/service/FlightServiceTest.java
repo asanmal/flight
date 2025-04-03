@@ -3,14 +3,15 @@ package space.flight.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import space.flight.entity.Dron;
-import space.flight.entity.Matriz;
-import space.flight.entity.Orden;
-import space.flight.exception.DroneNotFoundException;
-import space.flight.exception.DroneOutOfMatrixException;
-import space.flight.exception.DronePositionOccupiedException;
-import space.flight.exception.UnknownOrientationException;
-import space.flight.repository.DronRepository;
+import space.flight.domain.entity.Dron;
+import space.flight.domain.entity.Matriz;
+import space.flight.domain.entity.Orden;
+import space.flight.domain.service.FlightService;
+import space.flight.common.exception.DroneNotFoundException;
+import space.flight.common.exception.DroneOutOfMatrixException;
+import space.flight.common.exception.DronePositionOccupiedException;
+import space.flight.common.exception.UnknownOrientationException;
+import space.flight.infrastructure.repository.DronRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static space.flight.entity.Orientacion.*;
 
 @SpringBootTest
 class FlightServiceTest {
