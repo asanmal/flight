@@ -3,16 +3,17 @@ package space.flight.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import space.flight.dto.DronCreateDTO;
-import space.flight.dto.DronEditDTO;
-import space.flight.entity.Dron;
-import space.flight.entity.Matriz;
-import space.flight.exception.DroneNotFoundException;
-import space.flight.exception.DroneOutOfMatrixException;
-import space.flight.exception.DronePositionOccupiedException;
-import space.flight.exception.MatrixNotFoundException;
-import space.flight.repository.DronRepository;
-import space.flight.repository.MatrizRepository;
+import space.flight.application.dto.DronCreateDTO;
+import space.flight.application.dto.DronEditDTO;
+import space.flight.domain.entity.Dron;
+import space.flight.domain.entity.Matriz;
+import space.flight.domain.service.DronService;
+import space.flight.common.exception.DroneNotFoundException;
+import space.flight.common.exception.DroneOutOfMatrixException;
+import space.flight.common.exception.DronePositionOccupiedException;
+import space.flight.common.exception.MatrixNotFoundException;
+import space.flight.infrastructure.repository.DronRepository;
+import space.flight.infrastructure.repository.MatrizRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static space.flight.entity.Orientacion.E;
+import static space.flight.domain.entity.Orientacion.E;
 
 @SpringBootTest
 class DronServiceTest {

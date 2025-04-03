@@ -6,11 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import space.flight.dto.MatrizCreateDTO;
-import space.flight.dto.MatrizDTO;
-import space.flight.dto.MatrizEditDTO;
-import space.flight.entity.Matriz;
-import space.flight.service.MatrizService;
+import space.flight.application.dto.MatrizCreateDTO;
+import space.flight.application.dto.MatrizDTO;
+import space.flight.application.dto.MatrizEditDTO;
+import space.flight.domain.entity.Matriz;
+import space.flight.domain.service.MatrizService;
+import space.flight.infrastructure.controller.MatrizController;
 
 import java.util.List;
 
